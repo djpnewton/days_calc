@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Days Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .instructions {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .spreadsheet {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .header-row {
+            display: grid;
+            grid-template-columns: 50px 200px 200px 120px 50px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #ddd;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .header-cell {
+            padding: 12px;
+            border-right: 1px solid #ddd;
+        }
+
+        .header-cell:last-child {
+            border-right: none;
+        }
+
+        .data-rows {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 50px 200px 200px 120px 50px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .row:hover {
+            background: #f9f9f9;
+        }
+
+        .cell {
+            padding: 8px 12px;
+            border-right: 1px solid #eee;
+            display: flex;
+            align-items: center;
+        }
+
+        .cell:last-child {
+            border-right: none;
+        }
+
+        .row-number {
+            color: #999;
+            font-size: 13px;
+            text-align: center;
+            background: #f8f9fa;
+        }
+
+        input[type="date"] {
+            width: 100%;
+            padding: 6px 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        input[type="date"]:focus {
+            outline: none;
+            border-color: #4a90e2;
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+        }
+
+        .days-cell {
+            font-weight: 500;
+            color: #2c5aa0;
+            justify-content: flex-end;
+        }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            color: #dc3545;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .delete-btn:hover {
+            color: #c82333;
+            background: #fee;
+        }
+
+        .summary {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .summary-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            border-radius: 8px;
+            color: white;
+        }
+
+        .summary-card:nth-child(2) {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .summary-card:nth-child(3) {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .summary-label {
+            font-size: 13px;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .summary-value {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .add-btn {
+            background: #28a745;
+            color: white;
+        }
+
+        .add-btn:hover {
+            background: #218838;
+        }
+
+        .clear-btn {
+            background: #6c757d;
+            color: white;
+        }
+
+        .clear-btn:hover {
+            background: #5a6268;
+        }
+
+        .option-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .option-row label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #555;
+        }
+
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .help-text {
+            color: #999;
+            font-size: 12px;
+            margin-left: 26px;
+        }
+
+        .save-load-btn {
+            background: #007bff;
+            color: white;
+        }
+
+        .save-load-btn:hover {
+            background: #0056b3;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.2s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            animation: slideIn 0.3s;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 20px;
+            color: #333;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 28px;
+            color: #999;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+
+        .close-modal:hover {
+            color: #333;
+        }
+
+        .modal-body {
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .save-input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .save-input-group input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .save-input-group input:focus {
+            outline: none;
+            border-color: #4a90e2;
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+        }
+
+        .modal-save-btn {
+            padding: 10px 20px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .modal-save-btn:hover {
+            background: #218838;
+        }
+
+        .saves-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .save-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            border: 1px solid #e9ecef;
+        }
+
+        .save-item:hover {
+            background: #e9ecef;
+        }
+
+        .save-name {
+            font-weight: 500;
+            color: #333;
+            flex: 1;
+        }
+
+        .save-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .load-btn {
+            padding: 6px 12px;
+            background: #17a2b8;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .load-btn:hover {
+            background: #138496;
+        }
+
+        .delete-save-btn {
+            padding: 6px 12px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .delete-save-btn:hover {
+            background: #c82333;
+        }
+
+        .no-saves {
+            color: #999;
+            font-style: italic;
+            padding: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📅 Days Calculator</h1>
+        <p class="instructions">
+            Enter start and end dates to calculate the number of days between them. The total shows the sum of all day ranges.
+        </p>
+
+        <div class="option-row">
+            <label>
+                <input type="checkbox" id="inclusiveMode" onchange="toggleInclusiveMode()" checked>
+                <span>Inclusive counting (include both start and end dates)</span>
+            </label>
+            <div class="help-text">e.g., Feb 1 to Feb 2 = 2 days instead of 1</div>
+        </div>
+
+        <div class="summary">
+            <div class="summary-card">
+                <div class="summary-label">Total Days</div>
+                <div class="summary-value" id="totalDays">0</div>
+            </div>
+        </div>
+
+        <div class="spreadsheet">
+            <div class="header-row">
+                <div class="header-cell row-number">#</div>
+                <div class="header-cell">Start Date</div>
+                <div class="header-cell">End Date</div>
+                <div class="header-cell">Days</div>
+                <div class="header-cell"></div>
+            </div>
+            <div class="data-rows" id="dataRows">
+                <!-- Rows will be added here -->
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="add-btn" onclick="addRow()">+ Add Row</button>
+            <button class="clear-btn" onclick="clearAll()">Clear All</button>
+            <button class="save-load-btn" onclick="showSaveModal()">💾 Save</button>
+            <button class="save-load-btn" onclick="showLoadModal()">📂 Load</button>
+        </div>
+    </div>
+
+    <!-- Save Modal -->
+    <div id="saveModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>💾 Save Current State</h2>
+                <button class="close-modal" onclick="closeModal('saveModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="save-input-group">
+                    <input type="text" id="saveNameInput" placeholder="Enter save name..." maxlength="50">
+                    <button class="modal-save-btn" onclick="saveNamed()">Save</button>
+                </div>
+                <div id="savesList" class="saves-list">
+                    <div class="no-saves">No saved states yet</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load Modal -->
+    <div id="loadModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📂 Load Saved State</h2>
+                <button class="close-modal" onclick="closeModal('loadModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="loadSavesList" class="saves-list">
+                    <div class="no-saves">No saved states yet</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let rowCounter = 0;
+
+        function calculateDays(startDate, endDate) {
+            if (!startDate || !endDate) return 0;
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            const diffTime = Math.abs(end - start);
+            let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            // Add 1 day if inclusive mode is enabled
+            const isInclusive = document.getElementById('inclusiveMode').checked;
+            if (isInclusive) {
+                diffDays += 1;
+            }
+            
+            return diffDays;
+        }
+
+        function toggleInclusiveMode() {
+            // Recalculate all rows when inclusive mode changes
+            const rows = document.querySelectorAll('.row');
+            rows.forEach(row => {
+                const rowId = row.id.replace('row-', '');
+                updateRowDays(rowId);
+            });
+            saveData();
+        }
+
+        function updateSummary() {
+            const rows = document.querySelectorAll('.row');
+            let totalDays = 0;
+
+            rows.forEach(row => {
+                const daysCell = row.querySelector('.days-cell');
+                const days = parseInt(daysCell.textContent) || 0;
+                if (days > 0) {
+                    totalDays += days;
+                }
+            });
+
+            document.getElementById('totalDays').textContent = totalDays.toLocaleString();
+        }
+
+        function updateRowDays(rowId) {
+            const row = document.getElementById(`row-${rowId}`);
+            const startInput = row.querySelector('.start-date');
+            const endInput = row.querySelector('.end-date');
+            const daysCell = row.querySelector('.days-cell');
+
+            const days = calculateDays(startInput.value, endInput.value);
+            daysCell.textContent = days;
+
+            updateSummary();
+            saveData();
+        }
+
+        function onStartDateChange(rowId) {
+            const row = document.getElementById(`row-${rowId}`);
+            const startInput = row.querySelector('.start-date');
+            const endInput = row.querySelector('.end-date');
+            
+            // If end date is empty, set it to the start date
+            if (!endInput.value && startInput.value) {
+                endInput.value = startInput.value;
+            }
+            
+            updateRowDays(rowId);
+        }
+
+        function deleteRow(rowId) {
+            const row = document.getElementById(`row-${rowId}`);
+            row.remove();
+            updateSummary();
+            saveData();
+        }
+
+        function addRow() {
+            rowCounter++;
+            const dataRows = document.getElementById('dataRows');
+            
+            const row = document.createElement('div');
+            row.className = 'row';
+            row.id = `row-${rowCounter}`;
+            
+            row.innerHTML = `
+                <div class="cell row-number">${rowCounter}</div>
+                <div class="cell">
+                    <input type="date" class="start-date" onchange="onStartDateChange(${rowCounter})">
+                </div>
+                <div class="cell">
+                    <input type="date" class="end-date" onchange="updateRowDays(${rowCounter})">
+                </div>
+                <div class="cell days-cell">0</div>
+                <div class="cell">
+                    <button class="delete-btn" onclick="deleteRow(${rowCounter})" title="Delete row">×</button>
+                </div>
+            `;
+            
+            dataRows.appendChild(row);
+            saveData();
+        }
+
+        function clearAll() {
+            if (confirm('Are you sure you want to clear all rows?')) {
+                document.getElementById('dataRows').innerHTML = '';
+                rowCounter = 0;
+                updateSummary();
+                saveData();
+            }
+        }
+
+        function saveData() {
+            const rows = document.querySelectorAll('.row');
+            const data = [];
+            
+            rows.forEach(row => {
+                const startInput = row.querySelector('.start-date');
+                const endInput = row.querySelector('.end-date');
+                data.push({
+                    startDate: startInput.value,
+                    endDate: endInput.value
+                });
+            });
+            
+            const saveState = {
+                rows: data,
+                rowCounter: rowCounter,
+                inclusiveMode: document.getElementById('inclusiveMode').checked
+            };
+            
+            localStorage.setItem('daysCalcData', JSON.stringify(saveState));
+        }
+
+        function loadData() {
+            const saved = localStorage.getItem('daysCalcData');
+            
+            if (saved) {
+                try {
+                    const saveState = JSON.parse(saved);
+                    
+                    // Restore inclusive mode
+                    if (saveState.inclusiveMode !== undefined) {
+                        document.getElementById('inclusiveMode').checked = saveState.inclusiveMode;
+                    }
+                    
+                    // Restore row counter
+                    if (saveState.rowCounter) {
+                        rowCounter = saveState.rowCounter;
+                    }
+                    
+                    // Restore rows
+                    if (saveState.rows && saveState.rows.length > 0) {
+                        saveState.rows.forEach(rowData => {
+                            const currentCounter = rowCounter - saveState.rows.length + saveState.rows.indexOf(rowData) + 1;
+                            const dataRows = document.getElementById('dataRows');
+                            
+                            const row = document.createElement('div');
+                            row.className = 'row';
+                            row.id = `row-${currentCounter}`;
+                            
+                            row.innerHTML = `
+                                <div class="cell row-number">${currentCounter}</div>
+                                <div class="cell">
+                                    <input type="date" class="start-date" value="${rowData.startDate}" onchange="onStartDateChange(${currentCounter})">
+                                </div>
+                                <div class="cell">
+                                    <input type="date" class="end-date" value="${rowData.endDate}" onchange="updateRowDays(${currentCounter})">
+                                </div>
+                                <div class="cell days-cell">0</div>
+                                <div class="cell">
+                                    <button class="delete-btn" onclick="deleteRow(${currentCounter})" title="Delete row">×</button>
+                                </div>
+                            `;
+                            
+                            dataRows.appendChild(row);
+                            
+                            // Calculate days for this row
+                            const days = calculateDays(rowData.startDate, rowData.endDate);
+                            row.querySelector('.days-cell').textContent = days;
+                        });
+                        
+                        updateSummary();
+                        return; // Don't add default rows
+                    }
+                } catch (e) {
+                    console.error('Error loading saved data:', e);
+                }
+            }
+            
+            // Add initial rows if no saved data
+            for (let i = 0; i < 5; i++) {
+                addRow();
+            }
+        }
+
+        // Load data on page load
+        loadData();
+
+        // Modal functions
+        function showSaveModal() {
+            document.getElementById('saveModal').classList.add('show');
+            refreshSavesList();
+            document.getElementById('saveNameInput').focus();
+        }
+
+        function showLoadModal() {
+            document.getElementById('loadModal').classList.add('show');
+            refreshLoadList();
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('show');
+            }
+        }
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                document.querySelectorAll('.modal').forEach(modal => {
+                    modal.classList.remove('show');
+                });
+            }
+        });
+
+        // Allow Enter key in save input
+        document.addEventListener('DOMContentLoaded', function() {
+            const saveInput = document.getElementById('saveNameInput');
+            if (saveInput) {
+                saveInput.addEventListener('keypress', function(event) {
+                    if (event.key === 'Enter') {
+                        saveNamed();
+                    }
+                });
+            }
+        });
+
+        // Named saves functionality
+        function saveNamed() {
+            const nameInput = document.getElementById('saveNameInput');
+            const name = nameInput.value.trim();
+            
+            if (!name) {
+                alert('Please enter a name for this save');
+                return;
+            }
+            
+            // Get current state
+            const rows = document.querySelectorAll('.row');
+            const data = [];
+            
+            rows.forEach(row => {
+                const startInput = row.querySelector('.start-date');
+                const endInput = row.querySelector('.end-date');
+                data.push({
+                    startDate: startInput.value,
+                    endDate: endInput.value
+                });
+            });
+            
+            const saveState = {
+                rows: data,
+                rowCounter: rowCounter,
+                inclusiveMode: document.getElementById('inclusiveMode').checked,
+                timestamp: new Date().toISOString()
+            };
+            
+            // Get existing named saves
+            const namedSaves = JSON.parse(localStorage.getItem('daysCalcNamedSaves') || '{}');
+            namedSaves[name] = saveState;
+            localStorage.setItem('daysCalcNamedSaves', JSON.stringify(namedSaves));
+            
+            nameInput.value = '';
+            refreshSavesList();
+            alert(`Saved as "${name}"`);
+        }
+
+        function loadNamed(name) {
+            const namedSaves = JSON.parse(localStorage.getItem('daysCalcNamedSaves') || '{}');
+            const saveState = namedSaves[name];
+            
+            if (!saveState) {
+                alert('Save not found');
+                return;
+            }
+            
+            // Clear existing rows
+            document.getElementById('dataRows').innerHTML = '';
+            
+            // Restore inclusive mode
+            if (saveState.inclusiveMode !== undefined) {
+                document.getElementById('inclusiveMode').checked = saveState.inclusiveMode;
+            }
+            
+            // Restore row counter
+            if (saveState.rowCounter) {
+                rowCounter = saveState.rowCounter;
+            }
+            
+            // Restore rows
+            if (saveState.rows && saveState.rows.length > 0) {
+                saveState.rows.forEach(rowData => {
+                    const currentCounter = rowCounter - saveState.rows.length + saveState.rows.indexOf(rowData) + 1;
+                    const dataRows = document.getElementById('dataRows');
+                    
+                    const row = document.createElement('div');
+                    row.className = 'row';
+                    row.id = `row-${currentCounter}`;
+                    
+                    row.innerHTML = `
+                        <div class="cell row-number">${currentCounter}</div>
+                        <div class="cell">
+                            <input type="date" class="start-date" value="${rowData.startDate}" onchange="onStartDateChange(${currentCounter})">
+                        </div>
+                        <div class="cell">
+                            <input type="date" class="end-date" value="${rowData.endDate}" onchange="updateRowDays(${currentCounter})">
+                        </div>
+                        <div class="cell days-cell">0</div>
+                        <div class="cell">
+                            <button class="delete-btn" onclick="deleteRow(${currentCounter})" title="Delete row">×</button>
+                        </div>
+                    `;
+                    
+                    dataRows.appendChild(row);
+                    
+                    // Calculate days for this row
+                    const days = calculateDays(rowData.startDate, rowData.endDate);
+                    row.querySelector('.days-cell').textContent = days;
+                });
+            }
+            
+            updateSummary();
+            saveData(); // Update auto-save
+            closeModal('loadModal');
+        }
+
+        function deleteNamed(name) {
+            if (!confirm(`Delete save "${name}"?`)) {
+                return;
+            }
+            
+            const namedSaves = JSON.parse(localStorage.getItem('daysCalcNamedSaves') || '{}');
+            delete namedSaves[name];
+            localStorage.setItem('daysCalcNamedSaves', JSON.stringify(namedSaves));
+            refreshSavesList();
+            refreshLoadList();
+        }
+
+        function refreshSavesList() {
+            const namedSaves = JSON.parse(localStorage.getItem('daysCalcNamedSaves') || '{}');
+            const savesList = document.getElementById('savesList');
+            
+            const names = Object.keys(namedSaves).sort();
+            
+            if (names.length === 0) {
+                savesList.innerHTML = '<div class="no-saves">No saved states yet</div>';
+                return;
+            }
+            
+            savesList.innerHTML = '<h3 style="margin: 0 0 10px 0; font-size: 14px; color: #666;">Existing Saves:</h3>' + names.map(name => `
+                <div class="save-item">
+                    <span class="save-name">${name}</span>
+                    <div class="save-actions">
+                        <button class="delete-save-btn" onclick="deleteNamed('${name.replace(/'/g, "\\'")}')">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function refreshLoadList() {
+            const namedSaves = JSON.parse(localStorage.getItem('daysCalcNamedSaves') || '{}');
+            const loadSavesList = document.getElementById('loadSavesList');
+            
+            const names = Object.keys(namedSaves).sort();
+            
+            if (names.length === 0) {
+                loadSavesList.innerHTML = '<div class="no-saves">No saved states yet</div>';
+                return;
+            }
+            
+            loadSavesList.innerHTML = names.map(name => `
+                <div class="save-item">
+                    <span class="save-name">${name}</span>
+                    <div class="save-actions">
+                        <button class="load-btn" onclick="loadNamed('${name.replace(/'/g, "\\'")}')">Load</button>
+                        <button class="delete-save-btn" onclick="deleteNamed('${name.replace(/'/g, "\\'")}')">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+    </script>
+</body>
+</html>
